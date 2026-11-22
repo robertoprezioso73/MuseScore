@@ -73,6 +73,7 @@ void AppMenuModel::load()
         makeAddMenu(),
         makeFormatMenu(),
         makeToolsMenu(),
+        makeRecordingMenu(),
         makePluginsMenu()
     };
 
@@ -423,6 +424,44 @@ MenuItem* AppMenuModel::makeToolsMenu()
     };
 
     return makeMenu(TranslatableString("appshell/menu/tools", "&Tools"), toolsItems, "menu-tools");
+}
+
+MenuItem* AppMenuModel::makeRecordingMenu()
+{
+    MenuItemList quantizationItems {
+        makeMenuItem("midi-record-quantization-4"),
+        makeMenuItem("midi-record-quantization-8"),
+        makeMenuItem("midi-record-quantization-16"),
+        makeMenuItem("midi-record-quantization-32"),
+    };
+
+    MenuItemList countInItems {
+        makeMenuItem("midi-record-count-in-0"),
+        makeMenuItem("midi-record-count-in-1"),
+        makeMenuItem("midi-record-count-in-2"),
+    };
+
+    MenuItemList stavesItems {
+        makeMenuItem("midi-record-staves-1"),
+        makeMenuItem("midi-record-staves-2"),
+    };
+
+    MenuItemList recordingItems {
+        makeMenuItem("midi-record"),
+        makeMenuItem("midi-record-requantize"),
+        makeSeparator(),
+        makeMenu(TranslatableString("appshell/menu/recording", "Minimum &quantization"), quantizationItems, "menu-recording-quantization"),
+        makeMenuItem("midi-record-tuplets"),
+        makeMenuItem("midi-record-legato"),
+        makeMenu(TranslatableString("appshell/menu/recording", "&Count-in"), countInItems, "menu-recording-count-in"),
+        makeSeparator(),
+        makeMenu(TranslatableString("appshell/menu/recording", "&Staves"), stavesItems, "menu-recording-staves"),
+        makeMenuItem("midi-record-split-point"),
+        makeSeparator(),
+        makeMenuItem("midi-record-latency"),
+    };
+
+    return makeMenu(TranslatableString("appshell/menu/recording", "&Recording"), recordingItems, "menu-recording");
 }
 
 MenuItem* AppMenuModel::makePluginsMenu()

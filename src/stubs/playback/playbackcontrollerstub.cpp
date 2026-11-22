@@ -219,3 +219,14 @@ muse::Progress PlaybackControllerStub::onlineSoundsProcessingProgress() const
 {
     return {};
 }
+
+const MidiRecordingPreviewNoteList& PlaybackControllerStub::midiRecordingPreviewNotes() const
+{
+    static const MidiRecordingPreviewNoteList notes;
+    return notes;
+}
+
+muse::async::Notification PlaybackControllerStub::midiRecordingPreviewNotesChanged() const
+{
+    return {};
+}

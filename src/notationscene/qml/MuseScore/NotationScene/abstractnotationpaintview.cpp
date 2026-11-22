@@ -700,6 +700,9 @@ void AbstractNotationPaintView::paint(QPainter* qp)
     m_loopInMarker->paint(painter);
     m_loopOutMarker->paint(painter);
 
+    //! NOTE The notes played while recording from a MIDI keyboard (a preview, not part of the score)
+    MidiRecordingPreview::paint(painter, notation()->elements()->msScore(), playbackController()->midiRecordingPreviewNotes());
+
     if (notation()->viewMode() == engraving::LayoutMode::LINE) {
         ContinuousPanel::NotationViewContext nvCtx;
         nvCtx.xOffset = m_matrix.dx();
@@ -729,6 +732,10 @@ void AbstractNotationPaintView::onNotationSetup()
 
     playbackController()->currentPlaybackPositionChanged().onReceive(this, [this](audio::secs_t, midi::tick_t tick) {
         movePlaybackCursor(tick);
+    });
+
+    playbackController()->midiRecordingPreviewNotesChanged().onNotify(this, [this]() {
+        scheduleRedraw();
     });
 
     notationConfiguration()->foregroundChanged().onNotify(this, [this]() {

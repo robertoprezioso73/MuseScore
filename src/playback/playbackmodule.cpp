@@ -65,6 +65,7 @@ void PlaybackModule::resolveImports()
     auto ir = ioc()->resolve<IInteractiveUriRegister>(moduleName());
     if (ir) {
         ir->registerQmlUri(Uri("musescore://playback/soundprofilesdialog"), "MuseScore.Playback", "SoundProfilesDialog");
+        ir->registerQmlUri(Uri("musescore://playback/midirecordingsplitpoint"), "MuseScore.Playback", "MidiRecordingSplitPointDialog");
     }
 }
 

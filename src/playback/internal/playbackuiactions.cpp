@@ -34,6 +34,7 @@ using namespace muse::actions;
 
 static const ActionCode PLAY_FROM_SELECTION_CODE("play-from-selection");
 static const ActionCode CLEAR_ONLINE_SOUNDS_CACHE_CODE("clear-online-sounds-cache");
+static const ActionCode REQUANTIZE_LAST_MIDI_RECORDING_CODE("midi-record-requantize");
 
 const UiActionList PlaybackUiActions::s_mainActions = {
     UiAction("play",
@@ -71,6 +72,14 @@ const UiActionList PlaybackUiActions::s_mainActions = {
              TranslatableString("action", "Stop playback"),
              IconCode::Code::STOP
              ),
+    UiAction("midi-record",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Record MIDI"),
+             TranslatableString("action", "Record from MIDI keyboard with metronome, starting from the selected measure"),
+             IconCode::Code::RECORD_FILL,
+             Checkable::Yes
+             ),
     UiAction("rewind",
              mu::context::UiCtxProjectOpened,
              mu::context::CTX_NOTATION_FOCUSED,
@@ -101,6 +110,117 @@ const UiActionList PlaybackUiActions::s_mainActions = {
              TranslatableString("action", "Open playback setup dialog"),
              IconCode::Code::NONE
              )
+};
+
+const UiActionList PlaybackUiActions::s_midiRecordingActions = {
+    UiAction("midi-record-requantize",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Re-quantize last recording"),
+             TranslatableString("action", "Write the last MIDI recording again with the current recording settings"),
+             IconCode::Code::NONE
+             ),
+    UiAction("midi-record-quantization-4",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Quarter note"),
+             TranslatableString("action", "MIDI recording: minimum quantization quarter note"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-quantization-8",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Eighth note"),
+             TranslatableString("action", "MIDI recording: minimum quantization eighth note"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-quantization-16",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "16th note"),
+             TranslatableString("action", "MIDI recording: minimum quantization 16th note"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-quantization-32",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "32nd note"),
+             TranslatableString("action", "MIDI recording: minimum quantization 32nd note"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-tuplets",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Detect tuplets"),
+             TranslatableString("action", "MIDI recording: detect tuplets"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-legato",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Legato durations"),
+             TranslatableString("action", "MIDI recording: lengthen notes up to the next one when the gap is shorter than the minimum quantization"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-count-in-0",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "No count-in"),
+             TranslatableString("action", "MIDI recording: count-in no count-in"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-count-in-1",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "1 measure"),
+             TranslatableString("action", "MIDI recording: count-in 1 measure"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-count-in-2",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "2 measures"),
+             TranslatableString("action", "MIDI recording: count-in 2 measures"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-staves-1",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "One staff"),
+             TranslatableString("action", "MIDI recording: record on the selected staff"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-staves-2",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Two staves (split)"),
+             TranslatableString("action", "MIDI recording: split the notes between the selected staff and the staff below"),
+             IconCode::Code::NONE,
+             Checkable::Yes
+             ),
+    UiAction("midi-record-split-point",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Split point…"),
+             TranslatableString("action", "MIDI recording: choose the split point between the two staves")
+             ),
+    UiAction("midi-record-latency",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Latency compensation…"),
+             TranslatableString("action", "Open the latency compensation setting of the MIDI recording"),
+             IconCode::Code::NONE
+             ),
 };
 
 const UiActionList PlaybackUiActions::s_midiInputActions = {
@@ -234,6 +354,8 @@ void PlaybackUiActions::init()
     });
 
     globalContext()->currentNotationChanged().onNotify(this, [this]() {
+        m_actionEnabledChanged.send({ REQUANTIZE_LAST_MIDI_RECORDING_CODE });
+
         INotationPtr currNotation = globalContext()->currentNotation();
         if (!currNotation) {
             return;
@@ -249,6 +371,14 @@ void PlaybackUiActions::init()
         }, Asyncable::Mode::SetReplace /* FIXME */);
     });
 
+    m_controller->lastMidiRecordingChanged().onNotify(this, [this]() {
+        m_actionEnabledChanged.send({ REQUANTIZE_LAST_MIDI_RECORDING_CODE });
+    });
+
+    m_controller->isPlayingChanged().onNotify(this, [this]() {
+        m_actionEnabledChanged.send({ REQUANTIZE_LAST_MIDI_RECORDING_CODE });
+    });
+
     m_controller->onlineSoundsChanged().onNotify(this, [this]() {
         m_actionEnabledChanged.send({ CLEAR_ONLINE_SOUNDS_CACHE_CODE });
     });
@@ -260,6 +390,7 @@ const UiActionList& PlaybackUiActions::actionsList() const
     if (alist.empty()) {
         alist.insert(alist.end(), s_mainActions.cbegin(), s_mainActions.cend());
         alist.insert(alist.end(), s_midiInputActions.cbegin(), s_midiInputActions.cend());
+        alist.insert(alist.end(), s_midiRecordingActions.cbegin(), s_midiRecordingActions.cend());
         alist.insert(alist.end(), s_midiInputPitchActions.cbegin(), s_midiInputPitchActions.cend());
         alist.insert(alist.end(), s_settingsActions.cbegin(), s_settingsActions.cend());
         alist.insert(alist.end(), s_loopBoundaryActions.cbegin(), s_loopBoundaryActions.cend());
@@ -277,6 +408,10 @@ bool PlaybackUiActions::actionEnabled(const UiAction& act) const
 
     if (!m_controller->canReceiveAction(act.code)) {
         return false;
+    }
+
+    if (act.code == REQUANTIZE_LAST_MIDI_RECORDING_CODE) {
+        return m_controller->canRequantizeLastMidiRecording();
     }
 
     if (act.code == CLEAR_ONLINE_SOUNDS_CACHE_CODE) {
@@ -312,6 +447,11 @@ const UiActionList& PlaybackUiActions::midiInputActions()
     return s_midiInputActions;
 }
 
+const UiActionList& PlaybackUiActions::midiRecordingActions()
+{
+    return s_midiRecordingActions;
+}
+
 const UiActionList& PlaybackUiActions::midiInputPitchActions()
 {
     return s_midiInputPitchActions;
@@ -334,6 +474,7 @@ const muse::ui::ToolConfig& PlaybackUiActions::defaultPlaybackToolConfig()
         config.items = {
             { "rewind", true },
             { "play", true },
+            { "midi-record", true },
             { "loop", true },
             { "loop-in", true },
             { "loop-out", true },

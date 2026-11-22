@@ -36,6 +36,8 @@ using namespace muse::uicomponents;
 using namespace muse::audio;
 
 static const ActionCode PLAY_ACTION_CODE("play");
+static const ActionCode MIDI_RECORD_ACTION_CODE("midi-record");
+static const QString MIDI_RECORD_MENU_ID("midi-record-menu");
 
 PlaybackToolBarModel::PlaybackToolBarModel(QObject* parent)
     : AbstractMenuModel(parent)
@@ -111,6 +113,11 @@ void PlaybackToolBarModel::updateActions()
             }
 
             result << menuItem;
+
+            //! NOTE The small dropdown next to the Record button, with the recording settings
+            if (item.action == MIDI_RECORD_ACTION_CODE) {
+                result << makeMidiRecordingMenu();
+            }
         }
     }
 
@@ -137,6 +144,49 @@ MenuItem* PlaybackToolBarModel::makeInputPitchMenu()
     MenuItem* menu = makeMenu(muse::TranslatableString("notation", "MIDI input pitch"), items);
     UiAction action = menu->action();
     action.iconCode = IconCode::Code::MUSIC_NOTES;
+    menu->setAction(action);
+
+    return menu;
+}
+
+MenuItem* PlaybackToolBarModel::makeMidiRecordingMenu()
+{
+    MenuItemList quantizationItems {
+        makeMenuItem("midi-record-quantization-4"),
+        makeMenuItem("midi-record-quantization-8"),
+        makeMenuItem("midi-record-quantization-16"),
+        makeMenuItem("midi-record-quantization-32"),
+    };
+
+    MenuItemList countInItems {
+        makeMenuItem("midi-record-count-in-0"),
+        makeMenuItem("midi-record-count-in-1"),
+        makeMenuItem("midi-record-count-in-2"),
+    };
+
+    MenuItemList stavesItems {
+        makeMenuItem("midi-record-staves-1"),
+        makeMenuItem("midi-record-staves-2"),
+    };
+
+    MenuItemList items {
+        makeMenuItem("midi-record-requantize"),
+        makeSeparator(),
+        makeMenu(TranslatableString("playback", "Minimum quantization"), quantizationItems),
+        makeMenuItem("midi-record-tuplets"),
+        makeMenuItem("midi-record-legato"),
+        makeMenu(TranslatableString("playback", "Count-in"), countInItems),
+        makeSeparator(),
+        makeMenu(TranslatableString("playback", "Staves"), stavesItems),
+        makeMenuItem("midi-record-split-point"),
+        makeSeparator(),
+        makeMenuItem("midi-record-latency"),
+    };
+
+    MenuItem* menu = makeMenu(TranslatableString("playback", "MIDI recording settings"), items, MIDI_RECORD_MENU_ID);
+
+    UiAction action = menu->action();
+    action.iconCode = IconCode::Code::SMALL_ARROW_DOWN;
     menu->setAction(action);
 
     return menu;

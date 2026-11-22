@@ -34,6 +34,7 @@
 #include "audio/main/iplayer.h"
 #include "audio/main/iplayback.h"
 #include "audio/common/audiotypes.h"
+#include "audio/main/iaudioconfiguration.h"
 #include "iinteractive.h"
 #include "tours/itoursservice.h"
 
@@ -45,11 +46,13 @@
 
 namespace mu::playback {
 class OnlineSoundsController;
+class MidiRecordingController;
 class PlaybackController : public IPlaybackController, public muse::actions::Actionable, public muse::async::Asyncable,
     public muse::Contextable
 {
     muse::GlobalInject<IPlaybackConfiguration> configuration;
     muse::GlobalInject<notation::INotationConfiguration> notationConfiguration;
+    muse::GlobalInject<muse::audio::IAudioConfiguration> audioConfiguration;
     muse::ContextInject<muse::actions::IActionsDispatcher> dispatcher = { this };
     muse::ContextInject<context::IGlobalContext> globalContext = { this };
     muse::ContextInject<muse::audio::IPlayback> playback = { this };
@@ -132,6 +135,12 @@ public:
     muse::async::Notification onlineSoundsChanged() const override;
     muse::Progress onlineSoundsProcessingProgress() const override;
 
+    const MidiRecordingPreviewNoteList& midiRecordingPreviewNotes() const override;
+    muse::async::Notification midiRecordingPreviewNotesChanged() const override;
+
+    bool canRequantizeLastMidiRecording() const;
+    muse::async::Notification lastMidiRecordingChanged() const;
+
 private:
     muse::audio::IPlayerPtr currentPlayer() const;
 
@@ -190,6 +199,24 @@ private:
     void setMidiUseWrittenPitch(bool useWrittenPitch);
     void toggleLoopPlayback();
     void toggleHearPlaybackWhenEditing();
+
+    bool isMidiRecording() const;
+    void toggleMidiRecording();
+    void startMidiRecording();
+    void onMidiRecordingPlaybackStatusChanged();
+    void cancelMidiRecording();
+    void forceMetronomeForMidiRecording();
+    void restoreMetronomeAfterMidiRecording();
+    void playMidiRecordingNote(int pitch, int velocity);
+
+    void requantizeLastMidiRecording();
+    void setMidiRecordingMinQuantization(int ticks);
+    void setMidiRecordingCountInMeasures(int measures);
+    void toggleMidiRecordingTuplets();
+    void toggleMidiRecordingLegato();
+    void openMidiRecordingLatencySettings();
+    void setMidiRecordingTwoStaves(bool twoStaves);
+    void openMidiRecordingSplitPointDialog();
 
     void reloadPlaybackCache();
 
@@ -266,6 +293,11 @@ private:
 
     DrumsetLoader m_drumsetLoader;
     std::unique_ptr<OnlineSoundsController> m_onlineSoundsController;
+
+    std::unique_ptr<MidiRecordingController> m_midiRecordingController;
+    bool m_midiRecordingPlaybackStarted = false;
+    std::map<int, engraving::Note*> m_midiRecordingSoundingNotes; // <pitch, note>
+    muse::async::Notification m_lastMidiRecordingChanged;
 
     bool m_measureInputLag = false;
 };

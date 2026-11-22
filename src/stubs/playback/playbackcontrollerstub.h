@@ -92,5 +92,8 @@ public:
     const std::map<muse::audio::TrackId, muse::audio::AudioResourceMeta>& onlineSounds() const override;
     muse::async::Notification onlineSoundsChanged() const override;
     muse::Progress onlineSoundsProcessingProgress() const override;
+
+    const MidiRecordingPreviewNoteList& midiRecordingPreviewNotes() const override;
+    muse::async::Notification midiRecordingPreviewNotesChanged() const override;
 };
 }

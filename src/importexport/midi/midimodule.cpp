@@ -29,6 +29,7 @@
 #include "internal/notationmidiwriter.h"
 
 #include "internal/midiconfiguration.h"
+#include "internal/midirecordingimporter.h"
 
 #include "log.h"
 
@@ -46,6 +47,7 @@ void MidiModule::registerExports()
     m_configuration = std::make_shared<MidiConfiguration>();
 
     ioc()->registerExport<IMidiImportExportConfiguration>(moduleName(), m_configuration);
+    ioc()->registerExport<IMidiRecordingImporter>(moduleName(), std::make_shared<MidiRecordingImporter>());
 }
 
 void MidiModule::resolveImports()

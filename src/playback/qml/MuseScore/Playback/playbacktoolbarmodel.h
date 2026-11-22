@@ -93,6 +93,7 @@ signals:
 private:
     void setupConnections();
     muse::uicomponents::MenuItem* makeInputPitchMenu();
+    muse::uicomponents::MenuItem* makeMidiRecordingMenu();
 
     void updateActions();
     void onActionsStateChanges(const muse::actions::ActionCodeList& codes) override;

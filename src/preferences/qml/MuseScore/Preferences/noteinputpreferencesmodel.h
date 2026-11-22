@@ -58,6 +58,8 @@ class NoteInputPreferencesModel : public QObject, public muse::Contextable, publ
         bool warnGuitarBends READ warnGuitarBends WRITE setWarnGuitarBends NOTIFY warnGuitarBendsChanged)
     Q_PROPERTY(
         int delayBetweenNotesInRealTimeModeMilliseconds READ delayBetweenNotesInRealTimeModeMilliseconds WRITE setDelayBetweenNotesInRealTimeModeMilliseconds NOTIFY delayBetweenNotesInRealTimeModeMillisecondsChanged)
+    Q_PROPERTY(
+        int midiRecordingLatencyCompensationMilliseconds READ midiRecordingLatencyCompensationMilliseconds WRITE setMidiRecordingLatencyCompensationMilliseconds NOTIFY midiRecordingLatencyCompensationMillisecondsChanged)
 
     Q_PROPERTY(bool playNotesWhenEditing READ playNotesWhenEditing WRITE setPlayNotesWhenEditing NOTIFY playNotesWhenEditingChanged)
     Q_PROPERTY(
@@ -100,6 +102,7 @@ public:
     bool startNoteInputAtSelectedNoteRestWhenPressingMidiKey() const;
     bool advanceToNextNoteOnKeyRelease() const;
     int delayBetweenNotesInRealTimeModeMilliseconds() const;
+    int midiRecordingLatencyCompensationMilliseconds() const;
 
     bool playNotesWhenEditing() const;
     bool playPreviewNotesInInputByDuration() const;
@@ -126,6 +129,7 @@ public slots:
     void setStartNoteInputAtSelectedNoteRestWhenPressingMidiKey(bool value);
     void setAdvanceToNextNoteOnKeyRelease(bool value);
     void setDelayBetweenNotesInRealTimeModeMilliseconds(int delay);
+    void setMidiRecordingLatencyCompensationMilliseconds(int latency);
 
     void setPlayNotesWhenEditing(bool value);
     void setPlayPreviewNotesInInputByDuration(bool value);
@@ -152,6 +156,7 @@ signals:
     void startNoteInputAtSelectedNoteRestWhenPressingMidiKeyChanged(bool value);
     void advanceToNextNoteOnKeyReleaseChanged(bool value);
     void delayBetweenNotesInRealTimeModeMillisecondsChanged(int delay);
+    void midiRecordingLatencyCompensationMillisecondsChanged(int latency);
 
     void playNotesWhenEditingChanged(bool value);
     void playPreviewNotesInInputByDurationChanged(bool value);

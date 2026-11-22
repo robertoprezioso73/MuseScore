@@ -51,6 +51,7 @@ public:
 
     static const muse::ui::UiActionList& midiInputActions();
     static const muse::ui::UiActionList& midiInputPitchActions();
+    static const muse::ui::UiActionList& midiRecordingActions();
     static const muse::ui::UiActionList& settingsActions();
     static const muse::ui::UiActionList& loopBoundaryActions();
 
@@ -59,6 +60,7 @@ public:
 private:
     static const muse::ui::UiActionList s_mainActions;
     static const muse::ui::UiActionList s_midiInputActions;
+    static const muse::ui::UiActionList s_midiRecordingActions;
     static const muse::ui::UiActionList s_midiInputPitchActions;
     static const muse::ui::UiActionList s_settingsActions;
     static const muse::ui::UiActionList s_loopBoundaryActions;

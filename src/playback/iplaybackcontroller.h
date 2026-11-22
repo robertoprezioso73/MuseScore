@@ -36,6 +36,15 @@
 #include "playbacktypes.h"
 
 namespace mu::playback {
+//! A note shown on the score while recording from a MIDI keyboard (only a preview, not part of the score)
+struct MidiRecordingPreviewNote {
+    notation::staff_idx_t staffIdx = 0;
+    int pitch = 0; // sounding pitch
+    int tick = 0;  // raw tick, where the note was played (not quantized)
+};
+
+using MidiRecordingPreviewNoteList = std::vector<MidiRecordingPreviewNote>;
+
 class IPlaybackController : MODULE_CONTEXT_INTERFACE
 {
     INTERFACE_ID(IPlaybackController)
@@ -120,5 +129,8 @@ public:
     virtual const std::map<muse::audio::TrackId, muse::audio::AudioResourceMeta>& onlineSounds() const = 0;
     virtual muse::async::Notification onlineSoundsChanged() const = 0;
     virtual muse::Progress onlineSoundsProcessingProgress() const = 0;
+
+    virtual const MidiRecordingPreviewNoteList& midiRecordingPreviewNotes() const = 0;
+    virtual muse::async::Notification midiRecordingPreviewNotesChanged() const = 0;
 };
 }
